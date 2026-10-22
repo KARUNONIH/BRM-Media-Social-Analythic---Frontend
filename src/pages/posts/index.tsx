@@ -6,6 +6,8 @@ import {
   RiTimeLine,
   RiDownloadLine,
   RiCloseLine,
+  RiHeartLine,
+  RiChat3Line,
 } from "react-icons/ri";
 import { PageHeaderOrganism } from "../../components/common/PageHeaderOrganism";
 
@@ -181,9 +183,15 @@ export const PostsPage: React.FC = () => {
                 <p className="text-xs text-gray-800 line-clamp-3 leading-relaxed font-medium">
                   {post.caption}
                 </p>
-                <div className="flex items-center gap-3 mt-3 text-[11px] text-gray-500 font-semibold">
-                  <span>❤️ {post.likes.toLocaleString()} Likes</span>
-                  <span>💬 {post.comments.toLocaleString()} Komentar</span>
+                <div className="flex items-center gap-4 mt-3 text-[11px] text-gray-600 font-semibold">
+                  <span className="inline-flex items-center gap-1.5 text-rose-600">
+                    <RiHeartLine size={14} />
+                    <span className="text-gray-700">{post.likes.toLocaleString()} Likes</span>
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 text-blue-600">
+                    <RiChat3Line size={14} />
+                    <span className="text-gray-700">{post.comments.toLocaleString()} Komentar</span>
+                  </span>
                 </div>
               </div>
             </div>
@@ -243,8 +251,14 @@ export const PostsPage: React.FC = () => {
               <div className="flex flex-col justify-between space-y-3">
                 <div className="space-y-2">
                   <div className="flex items-center gap-4 text-xs font-semibold text-gray-700">
-                    <span>❤️ {selectedPost.likes} Likes</span>
-                    <span>💬 {selectedPost.comments} Komentar</span>
+                    <span className="inline-flex items-center gap-1.5 text-rose-600">
+                      <RiHeartLine size={15} />
+                      <span className="text-gray-700">{selectedPost.likes.toLocaleString()} Likes</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 text-blue-600">
+                      <RiChat3Line size={15} />
+                      <span className="text-gray-700">{selectedPost.comments.toLocaleString()} Komentar</span>
+                    </span>
                   </div>
                   <p className="text-xs text-gray-800 leading-relaxed max-h-56 overflow-y-auto scrollbar-hide border border-gray-100 p-3 rounded bg-gray-50/50">
                     {selectedPost.caption}

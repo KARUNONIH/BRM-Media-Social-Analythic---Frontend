@@ -511,8 +511,14 @@ export const DashboardOverview: React.FC = () => {
               <div className="flex flex-col justify-between space-y-3">
                 <div className="space-y-2">
                   <div className="flex items-center gap-4 text-xs font-semibold text-gray-700">
-                    <span>❤️ {selectedPost.likes} Likes</span>
-                    <span>💬 {selectedPost.comments} Komentar</span>
+                    <span className="inline-flex items-center gap-1.5 text-rose-600">
+                      <RiHeartLine size={15} />
+                      <span className="text-gray-700">{selectedPost.likes.toLocaleString()} Likes</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 text-blue-600">
+                      <RiChat3Line size={15} />
+                      <span className="text-gray-700">{selectedPost.comments.toLocaleString()} Komentar</span>
+                    </span>
                   </div>
                   <p className="text-xs text-gray-800 leading-relaxed max-h-56 overflow-y-auto scrollbar-hide border border-gray-100 p-3 rounded bg-gray-50/50">
                     {selectedPost.caption}
