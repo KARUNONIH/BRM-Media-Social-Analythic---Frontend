@@ -1,0 +1,77 @@
+{
+  ".oxlintrc.json": {
+    "mtime": 1787199157.3650382,
+    "ast_hash": "029f4905006c1fffd96bc863e2d98d3e",
+    "semantic_hash": ""
+  },
+  "package.json": {
+    "mtime": 1792633621.6845021,
+    "ast_hash": "8eeeaf28c4ccf98b18684a7841827ae1",
+    "semantic_hash": ""
+  },
+  "src/App.tsx": {
+    "mtime": 1792633627.3588963,
+    "ast_hash": "2e5b7dd581cb1e6c2e265383a1c2bf6c",
+    "semantic_hash": ""
+  },
+  "src/main.tsx": {
+    "mtime": 1769780382.2110102,
+    "ast_hash": "787e5a07efeb2bf6209d5937195f2f68",
+    "semantic_hash": ""
+  },
+  "tsconfig.app.json": {
+    "mtime": 1787199157.4690943,
+    "ast_hash": "5f2dafd737dea8a4ddcbb10f5113ac5a",
+    "semantic_hash": ""
+  },
+  "tsconfig.json": {
+    "mtime": 1769780382.1440253,
+    "ast_hash": "a3d39fa780ebff65444de257f291ce6c",
+    "semantic_hash": ""
+  },
+  "tsconfig.node.json": {
+    "mtime": 1787199157.499467,
+    "ast_hash": "f9cb81ddcea69ffdab672fc8c48dca66",
+    "semantic_hash": ""
+  },
+  "vite.config.ts": {
+    "mtime": 1792633520.9316812,
+    "ast_hash": "87c175db4989695d0be74b04e810641f",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1787199157.645229,
+    "ast_hash": "10495bfcc6c568eca4dab6dd5df795d3",
+    "semantic_hash": ""
+  },
+  "index.html": {
+    "mtime": 1792633395.3534925,
+    "ast_hash": "33bd262affcefea92f1509cda449a19c",
+    "semantic_hash": ""
+  },
+  "public/favicon.svg": {
+    "mtime": 1780150886.9077003,
+    "ast_hash": "7e840862161341271697daa99a40d76b",
+    "semantic_hash": ""
+  },
+  "public/icons.svg": {
+    "mtime": 1780150886.9137,
+    "ast_hash": "3b4fcfcf393eca4d264dca4a4663bc37",
+    "semantic_hash": ""
+  },
+  "src/assets/hero.png": {
+    "mtime": 1780150886.9006944,
+    "ast_hash": "aead493361b27e7510691c5d7072dfc1",
+    "semantic_hash": ""
+  },
+  "src/assets/react.svg": {
+    "mtime": 1769780382.183014,
+    "ast_hash": "f0402b67b6ce880f65666bb49e841696",
+    "semantic_hash": ""
+  },
+  "src/assets/vite.svg": {
+    "mtime": 1780150886.987245,
+    "ast_hash": "9960a24288958394ac50e57ff638b036",
+    "semantic_hash": ""
+  }
+}
