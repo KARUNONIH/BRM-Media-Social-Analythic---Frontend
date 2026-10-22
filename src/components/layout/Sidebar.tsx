@@ -3,7 +3,6 @@ import { Link, useLocation } from "react-router-dom";
 import {
   RiDashboardLine,
   RiInstagramLine,
-  RiSparklingLine,
   RiWhatsappLine,
 } from "react-icons/ri";
 
@@ -42,16 +41,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ],
     },
     {
-      title: "MEDIA SOSIAL",
+      title: "ANALITIK KONTEN",
       items: [
         { label: "Data Postingan", path: "/dashboard/posts", icon: <RiInstagramLine size={18} /> },
       ],
     },
     {
-      title: "AI & OTOMASI",
+      title: "ASISTEN WHATSAPP",
       items: [
-        { label: "Rekomendasi AI", path: "/dashboard/recommendations", icon: <RiSparklingLine size={18} /> },
-        { label: "Log WhatsApp Bot", path: "/dashboard/bot-logs", icon: <RiWhatsappLine size={18} /> },
+        { label: "Log & Monitor Bot", path: "/dashboard/bot-logs", icon: <RiWhatsappLine size={18} /> },
       ],
     },
   ];

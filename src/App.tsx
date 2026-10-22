@@ -7,10 +7,8 @@ import { LoginPage } from "./pages/login";
 import { DashboardLayout } from "./components/layout/DashboardLayout";
 import { DashboardOverview } from "./pages/dashboard";
 import { PostsPage } from "./pages/posts";
-import { RecommendationsPage } from "./pages/recommendations";
 import { BotLogsPage } from "./pages/bot-logs";
 
-// ponytail: connects to nextjs backend api, fallback to dummy internally
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
 export default function App() {
@@ -26,10 +24,6 @@ export default function App() {
               list: "/dashboard/posts",
             },
             {
-              name: "recommendations",
-              list: "/dashboard/recommendations",
-            },
-            {
               name: "bot-logs",
               list: "/dashboard/bot-logs",
             },
@@ -40,7 +34,6 @@ export default function App() {
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<DashboardOverview />} />
               <Route path="posts" element={<PostsPage />} />
-              <Route path="recommendations" element={<RecommendationsPage />} />
               <Route path="bot-logs" element={<BotLogsPage />} />
             </Route>
             <Route path="*" element={<Navigate to="/dashboard" replace />} />

@@ -3,15 +3,16 @@ import { useNavigate } from "react-router-dom";
 import {
   RiInstagramLine,
   RiVideoLine,
-  RiImageLine,
   RiSparklingLine,
   RiLineChartLine,
-  RiExternalLinkLine,
-  RiArrowRightLine,
-  RiWhatsappLine,
   RiTimeLine,
-  RiCheckboxCircleLine,
   RiRefreshLine,
+  RiSendPlaneLine,
+  RiCloseLine,
+  RiHeartLine,
+  RiChat3Line,
+  RiBuilding2Line,
+  RiExternalLinkLine,
 } from "react-icons/ri";
 import { PageHeaderOrganism } from "../../components/common/PageHeaderOrganism";
 
@@ -19,41 +20,43 @@ interface PostItem {
   id: string;
   shortcode: string;
   type: string;
+  category?: string;
   caption: string;
   postUrl: string;
   imageUrl: string;
   likes: number;
   comments: number;
-  reach: number;
-  engagementRate: number;
   publishedAt: string;
+  tags?: string[];
 }
 
 interface AnalyticsSummary {
   account: string;
   totalPosts: number;
   totalFollowers: number;
-  averageEngagementRate: number;
-  totalReachMonth: number;
+  averageLikes: number;
+  averageComments: number;
   distribution: {
     carousel: number;
     reels: number;
     singleImage: number;
   };
-  weeklyTrend: { day: string; posts: number; reach: number; engagement: number }[];
+  categoryBreakdown: { category: string; count: number; percentage: number }[];
+  weeklyTrend: { day: string; posts: number; avgLikes: number; avgComments: number }[];
 }
 
-interface ActionItem {
+interface ContentIdea {
   priority: string;
   title: string;
-  description: string;
-  expectedImpact: string;
+  rationale: string;
+  targetPillar: string;
+  suggestedDay: string;
 }
 
 interface AIRecommendations {
-  overallHealth: string;
+  accountScore: string;
   executiveSummary: string;
-  actionItems: ActionItem[];
+  nextContentIdeas: ContentIdea[];
 }
 
 export const DashboardOverview: React.FC = () => {
@@ -61,17 +64,17 @@ export const DashboardOverview: React.FC = () => {
   const [posts, setPosts] = useState<PostItem[]>([]);
   const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
   const [recommendations, setRecommendations] = useState<AIRecommendations | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [actionNotice, setActionNotice] = useState<string | null>(null);
+  const [syncingScraper, setSyncingScraper] = useState(false);
+  const [sendingWA, setSendingWA] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<PostItem | null>(null);
 
   const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
   const { timeStr, dateStr } = useMemo(() => {
     const now = new Date();
     return {
-      timeStr: now.toLocaleTimeString("id-ID", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
+      timeStr: now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
       dateStr: now.toLocaleDateString("id-ID", {
         weekday: "long",
         day: "numeric",
@@ -82,7 +85,6 @@ export const DashboardOverview: React.FC = () => {
   }, []);
 
   const loadData = async () => {
-    setLoading(true);
     try {
       const [resPosts, resSum, resRec] = await Promise.all([
         fetch(`${apiUrl}/posts`).then((r) => r.json()).catch(() => ({ data: [] })),
@@ -93,14 +95,43 @@ export const DashboardOverview: React.FC = () => {
       if (resPosts.data) setPosts(resPosts.data);
       if (resSum.data) setSummary(resSum.data);
       if (resRec.data) setRecommendations(resRec.data);
-    } finally {
-      setLoading(false);
+    } catch {
+      // ignore
     }
   };
 
   useEffect(() => {
     loadData();
   }, []);
+
+  // Trigger On-Demand Scraper via n8n Webhook
+  const handleTriggerScrape = async () => {
+    setSyncingScraper(true);
+    try {
+      const res = await fetch(`${apiUrl}/sync/scrape`, { method: "POST" });
+      const data = await res.json();
+      setActionNotice(data.message || "Pipeline scraping n8n berhasil dipicu.");
+      await loadData();
+    } catch {
+      setActionNotice("Gagal memicu scraper n8n.");
+    } finally {
+      setSyncingScraper(false);
+    }
+  };
+
+  // Trigger Dispatch Rekap ke WhatsApp
+  const handleDispatchWhatsApp = async () => {
+    setSendingWA(true);
+    try {
+      const res = await fetch(`${apiUrl}/bot/dispatch-summary`, { method: "POST" });
+      const data = await res.json();
+      setActionNotice(data.message || "Laporan ringkas berhasil dikirimkan ke WhatsApp.");
+    } catch {
+      setActionNotice("Gagal mengirim laporan ke WhatsApp.");
+    } finally {
+      setSendingWA(false);
+    }
+  };
 
   const statCards = [
     {
@@ -122,22 +153,22 @@ export const DashboardOverview: React.FC = () => {
       iconColor: "text-amber-600",
     },
     {
-      label: "Rata-rata Engagement",
-      value: `${summary?.averageEngagementRate || 5.78}%`,
-      sub: "interaksi per konten",
-      icon: <RiLineChartLine size={16} />,
+      label: "Rata-rata Likes",
+      value: summary?.averageLikes || 307,
+      sub: "per postingan Instagram",
+      icon: <RiHeartLine size={16} />,
+      bg: "bg-rose-50",
+      border: "border-rose-100",
+      iconColor: "text-rose-600",
+    },
+    {
+      label: "Rata-rata Komentar",
+      value: summary?.averageComments || 38,
+      sub: "tanggapan teknis & inquiry",
+      icon: <RiChat3Line size={16} />,
       bg: "bg-green-50",
       border: "border-green-100",
       iconColor: "text-green-600",
-    },
-    {
-      label: "Jangkauan Bulanan",
-      value: summary?.totalReachMonth.toLocaleString("id-ID") || "42.800",
-      sub: "tayangan 30 hari terakhir",
-      icon: <RiImageLine size={16} />,
-      bg: "bg-purple-50",
-      border: "border-purple-100",
-      iconColor: "text-purple-600",
     },
   ];
 
@@ -147,95 +178,46 @@ export const DashboardOverview: React.FC = () => {
       <PageHeaderOrganism
         prefix="Dashboard"
         title="Bumi Rekayasa Mandiri"
-        subtitle={`${timeStr} • ${dateStr} • Analitik Konten & Otomasi Asisten WhatsApp`}
+        subtitle={`${timeStr} • ${dateStr} • Analitik Instagram & Integrasi Bot WhatsApp`}
         subtitleIcon={<RiTimeLine size={14} />}
         actions={
           <div className="flex items-center gap-2 flex-wrap">
             <button
               type="button"
-              onClick={loadData}
-              disabled={loading}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-700 hover:border-[#8B6914] hover:text-[#8B6914] rounded text-xs font-semibold shadow-xs transition-colors cursor-pointer"
-            >
-              <RiRefreshLine size={14} className={loading ? "animate-spin" : ""} />
-              <span>Segarkan</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate("/dashboard/posts")}
+              onClick={handleTriggerScrape}
+              disabled={syncingScraper}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#8B6914] text-white hover:bg-[#6B5010] rounded text-xs font-semibold shadow-xs transition-colors cursor-pointer"
             >
-              <RiInstagramLine size={14} />
-              <span>Data Postingan</span>
+              <RiRefreshLine size={14} className={syncingScraper ? "animate-spin" : ""} />
+              <span>{syncingScraper ? "Menyinkronkan..." : "Tarik Data Instagram"}</span>
             </button>
             <button
               type="button"
-              onClick={() => navigate("/dashboard/recommendations")}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-700 hover:border-[#8B6914] hover:text-[#8B6914] rounded text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+              onClick={handleDispatchWhatsApp}
+              disabled={sendingWA}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white hover:bg-emerald-700 rounded text-xs font-semibold shadow-xs transition-colors cursor-pointer"
             >
-              <RiSparklingLine size={14} />
-              <span>Rekomendasi AI</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate("/dashboard/bot-logs")}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-700 hover:border-[#8B6914] hover:text-[#8B6914] rounded text-xs font-semibold shadow-xs transition-colors cursor-pointer"
-            >
-              <RiWhatsappLine size={14} />
-              <span>Log Bot WA</span>
+              <RiSendPlaneLine size={14} className={sendingWA ? "animate-pulse" : ""} />
+              <span>{sendingWA ? "Mengirim..." : "Kirim Rekap ke WA"}</span>
             </button>
           </div>
         }
       />
 
-      {/* 2. QUICK ACTION BANNERS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div
-          onClick={() => navigate("/dashboard/posts")}
-          className="bg-gradient-to-r from-amber-50 via-white to-amber-50/40 p-4 rounded border border-amber-200/80 shadow-2xs hover:shadow-xs transition-all cursor-pointer flex items-center justify-between gap-3"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded bg-[#8B6914]/10 text-[#8B6914] flex items-center justify-center shrink-0">
-              <RiLineChartLine size={20} />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-gray-900">
-                Analisis Kinerja Konten Instagram
-              </h3>
-              <p className="text-xs text-gray-600 mt-0.5">
-                Daftar postingan, engagement rate, dan statistik reach real-time.
-              </p>
-            </div>
-          </div>
-          <div className="inline-flex items-center gap-1 text-xs font-bold text-[#8B6914] shrink-0">
-            <RiArrowRightLine size={16} />
-          </div>
+      {/* Action Notice Alert */}
+      {actionNotice && (
+        <div className="p-3 rounded border border-amber-200 bg-amber-50 text-amber-900 text-xs flex items-center justify-between shadow-2xs">
+          <span>{actionNotice}</span>
+          <button
+            onClick={() => setActionNotice(null)}
+            className="text-amber-700 hover:text-amber-900 p-1"
+          >
+            <RiCloseLine size={16} />
+          </button>
         </div>
+      )}
 
-        <div
-          onClick={() => navigate("/dashboard/bot-logs")}
-          className="bg-gradient-to-r from-emerald-50 via-white to-emerald-50/40 p-4 rounded border border-emerald-200/80 shadow-2xs hover:shadow-xs transition-all cursor-pointer flex items-center justify-between gap-3"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded bg-emerald-600/10 text-emerald-600 flex items-center justify-center shrink-0">
-              <RiWhatsappLine size={20} />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-gray-900">
-                WhatsApp Bot AI Assistant
-              </h3>
-              <p className="text-xs text-gray-600 mt-0.5">
-                Audit riwayat interaksi, ekspor rekap Excel, dan status pipeline n8n.
-              </p>
-            </div>
-          </div>
-          <div className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 shrink-0">
-            <RiArrowRightLine size={16} />
-          </div>
-        </div>
-      </div>
-
-      {/* 3. UNIFIED STATISTIK RINGKAS CARD */}
+      {/* 2. UNIFIED STATISTIK RINGKAS CARD */}
       <div className="bg-white shadow shadow-gray-300 rounded overflow-hidden">
         <div className="p-6">
           <h2 className="text-sm font-medium text-gray-700 mb-3">Statistik Ringkas</h2>
@@ -261,93 +243,74 @@ export const DashboardOverview: React.FC = () => {
         </div>
       </div>
 
-      {/* 4. AI STRATEGIC RECOMMENDATION CARD */}
-      <div className="bg-white shadow shadow-gray-300 rounded overflow-hidden p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded bg-[#8B6914] text-white flex items-center justify-center">
-              <RiSparklingLine size={16} />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-gray-900">
-                AI Strategic Insights &amp; Rekomendasi Langkah Selanjutnya
+      {/* 3. DIAGRAM ANALITIK: KATEGORI LAYANAN BRM & TREN AKTIVITAS */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Distribusi Kategori Layanan Konstruksi */}
+        <div className="bg-white shadow shadow-gray-300 rounded overflow-hidden p-6 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <RiBuilding2Line className="text-[#8B6914]" size={18} />
+              <h2 className="text-sm font-semibold text-gray-800">
+                Pilar Layanan Konstruksi BRM
               </h2>
-              <p className="text-xs text-gray-500">
-                Evaluasi performa berkala untuk Owner &amp; Manajemen BRM
-              </p>
+            </div>
+            <p className="text-xs text-gray-500 mb-4">
+              Komposisi topik konten promosi layanan PT BRM
+            </p>
+
+            <div className="space-y-3">
+              {(summary?.categoryBreakdown || []).map((cat, idx) => (
+                <div key={idx}>
+                  <div className="flex justify-between text-xs font-medium text-gray-700 mb-1">
+                    <span>{cat.category}</span>
+                    <span className="font-semibold text-gray-900">{cat.count} post ({cat.percentage}%)</span>
+                  </div>
+                  <div className="w-full h-2 bg-gray-100 rounded overflow-hidden">
+                    <div
+                      className="h-full bg-[#8B6914] rounded"
+                      style={{ width: `${cat.percentage}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-          <span className="px-2.5 py-0.5 rounded text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">
-            {recommendations?.overallHealth || "Status: Optimal"}
-          </span>
+
+          <p className="mt-5 text-[11px] text-gray-500 border-t border-gray-100 pt-3">
+            Dominasi konten saat ini berada pada layanan <span className="font-semibold text-gray-800">Fabrikasi Baja</span> dan <span className="font-semibold text-gray-800">Renovasi Pabrik</span>.
+          </p>
         </div>
 
-        <p className="text-xs text-gray-700 leading-relaxed bg-amber-50/60 border border-amber-200/60 rounded p-4">
-          {recommendations?.executiveSummary}
-        </p>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
-          {(recommendations?.actionItems || []).map((item, idx) => (
-            <div
-              key={idx}
-              className="border border-gray-200 rounded p-4 bg-gray-50/50 flex flex-col justify-between space-y-2 hover:bg-white transition-all shadow-2xs"
-            >
-              <div>
-                <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                    item.priority === "Tinggi"
-                      ? "bg-rose-100 text-rose-700"
-                      : item.priority === "Sedang"
-                      ? "bg-amber-100 text-amber-800"
-                      : "bg-blue-100 text-blue-700"
-                  }`}
-                >
-                  Prioritas {item.priority}
-                </span>
-                <h4 className="text-xs font-bold text-gray-800 mt-2 leading-snug">
-                  {item.title}
-                </h4>
-                <p className="text-[11px] text-gray-500 mt-1 leading-relaxed">
-                  {item.description}
-                </p>
-              </div>
-
-              <div className="pt-2 border-t border-gray-200/60 flex items-center gap-1.5 text-[11px] text-emerald-700 font-semibold">
-                <RiCheckboxCircleLine size={13} className="shrink-0" />
-                <span>{item.expectedImpact}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* 5. VISUAL CHARTS */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Tren Jangkauan Mingguan */}
+        {/* Tren Aktivitas Posting Mingguan */}
         <div className="lg:col-span-2 bg-white shadow shadow-gray-300 rounded overflow-hidden p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-sm font-semibold text-gray-800">
-                Tren Jangkauan Konten Mingguan
-              </h2>
-              <p className="text-xs text-gray-500">Total jangkauan tayang per hari posting</p>
+              <div className="flex items-center gap-2">
+                <RiLineChartLine className="text-blue-600" size={18} />
+                <h2 className="text-sm font-semibold text-gray-800">
+                  Aktivitas &amp; Interaksi Mingguan
+                </h2>
+              </div>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Rata-rata likes per hari publikasi konten Instagram
+              </p>
             </div>
-            <span className="text-xs text-gray-400 font-medium">Satuan: Reach</span>
+            <span className="text-xs text-gray-400 font-medium">Satuan: Likes</span>
           </div>
 
           <div className="h-44 flex items-end justify-between gap-3 pt-6 pb-2">
             {(summary?.weeklyTrend || []).map((t, i) => {
-              const maxReach = 14000;
-              const heightPct = Math.round((t.reach / maxReach) * 100);
+              const maxLikes = 500;
+              const heightPct = Math.round((t.avgLikes / maxLikes) * 100);
               return (
                 <div key={i} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
-                  <span className="text-[10px] text-gray-500 font-semibold">{t.reach.toLocaleString()}</span>
+                  <span className="text-[10px] text-gray-500 font-semibold">{t.avgLikes}</span>
                   <div
                     style={{ height: `${heightPct}%` }}
                     className="w-full bg-[#8B6914] hover:bg-[#6B5010] rounded transition-all cursor-pointer relative group"
                   >
                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block bg-gray-800 text-white text-[10px] py-1 px-2 rounded whitespace-nowrap z-20">
-                      {t.posts} post &bull; ER: {t.engagement}%
+                      {t.posts} post &bull; {t.avgComments} komentar
                     </div>
                   </div>
                   <span className="text-xs text-gray-600 font-medium">{t.day}</span>
@@ -356,74 +319,84 @@ export const DashboardOverview: React.FC = () => {
             })}
           </div>
         </div>
+      </div>
 
-        {/* Distribusi Format Konten */}
-        <div className="bg-white shadow shadow-gray-300 rounded overflow-hidden p-6 flex flex-col justify-between">
-          <div>
-            <h2 className="text-sm font-semibold text-gray-800 mb-1">
-              Distribusi Format Konten
-            </h2>
-            <p className="text-xs text-gray-500 mb-4">Proporsi format konten Instagram BRM</p>
-
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between text-xs font-medium text-gray-700 mb-1">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded bg-[#8B6914]" /> Carousel / Slide
-                  </span>
-                  <span>28 item (58%)</span>
-                </div>
-                <div className="w-full h-2 bg-gray-100 rounded overflow-hidden">
-                  <div className="h-full bg-[#8B6914] rounded" style={{ width: "58%" }} />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-xs font-medium text-gray-700 mb-1">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded bg-blue-600" /> Reels / Video
-                  </span>
-                  <span>14 item (29%)</span>
-                </div>
-                <div className="w-full h-2 bg-gray-100 rounded overflow-hidden">
-                  <div className="h-full bg-blue-600 rounded" style={{ width: "29%" }} />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-xs font-medium text-gray-700 mb-1">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded bg-purple-600" /> Foto Tunggal
-                  </span>
-                  <span>6 item (13%)</span>
-                </div>
-                <div className="w-full h-2 bg-gray-100 rounded overflow-hidden">
-                  <div className="h-full bg-purple-600 rounded" style={{ width: "13%" }} />
-                </div>
-              </div>
+      {/* 4. AI CONTENT IDEATOR FOR MARKETING */}
+      <div className="bg-white shadow shadow-gray-300 rounded overflow-hidden p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded bg-[#8B6914] text-white flex items-center justify-center">
+              <RiSparklingLine size={16} />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-gray-900">
+                AI Content Ideator &amp; Strategic Action Plan
+              </h2>
+              <p className="text-xs text-gray-500">
+                Rekomendasi draf ide konten berikutnya berbasis analisis performa data terdahulu
+              </p>
             </div>
           </div>
+          <span className="px-2.5 py-0.5 rounded text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+            {recommendations?.accountScore || "Kesehatan Akun: 88/100"}
+          </span>
+        </div>
 
-          <div className="mt-5 p-3 rounded bg-amber-50/70 border border-amber-200/70 text-[11px] text-amber-900">
-            <span className="font-bold">Insight Format:</span> Video Reels menghasilkan jangkauan audiens baru tertinggi (+35%).
-          </div>
+        <p className="text-xs text-gray-700 leading-relaxed bg-amber-50/60 border border-amber-200/60 rounded p-4">
+          {recommendations?.executiveSummary}
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+          {(recommendations?.nextContentIdeas || []).map((idea, idx) => (
+            <div
+              key={idx}
+              className="border border-gray-200 rounded p-4 bg-gray-50/50 flex flex-col justify-between space-y-2 hover:bg-white transition-all shadow-2xs"
+            >
+              <div>
+                <div className="flex items-center justify-between">
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                      idea.priority === "Tinggi"
+                        ? "bg-rose-100 text-rose-700"
+                        : idea.priority === "Sedang"
+                        ? "bg-amber-100 text-amber-800"
+                        : "bg-blue-100 text-blue-700"
+                    }`}
+                  >
+                    Prioritas {idea.priority}
+                  </span>
+                  <span className="text-[10px] text-gray-400 font-medium">{idea.targetPillar}</span>
+                </div>
+                <h4 className="text-xs font-bold text-gray-800 mt-2 leading-snug">
+                  {idea.title}
+                </h4>
+                <p className="text-[11px] text-gray-500 mt-1 leading-relaxed">
+                  {idea.rationale}
+                </p>
+              </div>
+
+              <div className="pt-2 border-t border-gray-200/60 text-[11px] text-gray-700 font-medium">
+                Waktu Unggah Disarankan: <span className="font-bold text-[#8B6914]">{idea.suggestedDay}</span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* 6. TABEL POSTINGAN TERAKHIR */}
+      {/* 5. TABEL 5 POSTINGAN TERAKHIR */}
       <div className="bg-white shadow shadow-gray-300 rounded overflow-hidden">
         <div className="p-6 border-b border-gray-200 flex items-center justify-between">
           <div>
             <h2 className="text-sm font-semibold text-gray-800">
-              Daftar Postingan Terkini
+              Postingan Instagram Terkini
             </h2>
-            <p className="text-xs text-gray-500">Data postingan hasil ekstraksi otomatis n8n</p>
+            <p className="text-xs text-gray-500">Klik baris untuk melihat pratinjau detail postingan</p>
           </div>
           <button
             onClick={() => navigate("/dashboard/posts")}
             className="text-xs text-[#8B6914] font-semibold hover:underline cursor-pointer"
           >
-            Lihat Semua Postingan &rarr;
+            Buka Direktori Lengkap ({posts.length}) &rarr;
           </button>
         </div>
 
@@ -432,18 +405,22 @@ export const DashboardOverview: React.FC = () => {
             <thead className="bg-gray-50 border-b border-gray-200 text-gray-600 uppercase text-[10px] font-bold tracking-wider">
               <tr>
                 <th className="px-5 py-3">Thumbnail</th>
-                <th className="px-5 py-3">Tipe</th>
+                <th className="px-5 py-3">Format</th>
+                <th className="px-5 py-3">Kategori Layanan</th>
                 <th className="px-5 py-3">Caption Konten</th>
                 <th className="px-5 py-3">Likes</th>
                 <th className="px-5 py-3">Komentar</th>
-                <th className="px-5 py-3">Engagement</th>
                 <th className="px-5 py-3">Tanggal</th>
-                <th className="px-5 py-3 text-right">Tautan</th>
+                <th className="px-5 py-3 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {posts.slice(0, 5).map((post) => (
-                <tr key={post.id} className="hover:bg-amber-50/50 transition-colors">
+                <tr
+                  key={post.id}
+                  onClick={() => setSelectedPost(post)}
+                  className="hover:bg-amber-50/50 transition-colors cursor-pointer"
+                >
                   <td className="px-5 py-3.5">
                     <img
                       src={post.imageUrl}
@@ -462,22 +439,19 @@ export const DashboardOverview: React.FC = () => {
                       {post.type}
                     </span>
                   </td>
+                  <td className="px-5 py-3.5 font-medium text-gray-700">
+                    {post.category || "Proyek Konstruksi"}
+                  </td>
                   <td className="px-5 py-3.5 max-w-sm">
-                    <p className="line-clamp-2 text-gray-800 leading-relaxed font-medium">
+                    <p className="line-clamp-2 text-gray-800 leading-relaxed font-normal">
                       {post.caption}
                     </p>
-                    <span className="text-[10px] text-gray-400 font-mono mt-0.5 inline-block">
-                      #{post.shortcode}
-                    </span>
                   </td>
                   <td className="px-5 py-3.5 font-semibold text-gray-800">
                     {post.likes.toLocaleString()}
                   </td>
                   <td className="px-5 py-3.5 text-gray-600">
                     {post.comments.toLocaleString()}
-                  </td>
-                  <td className="px-5 py-3.5 font-bold text-emerald-600">
-                    {post.engagementRate}%
                   </td>
                   <td className="px-5 py-3.5 text-gray-500 whitespace-nowrap">
                     {new Date(post.publishedAt).toLocaleDateString("id-ID", {
@@ -487,15 +461,9 @@ export const DashboardOverview: React.FC = () => {
                     })}
                   </td>
                   <td className="px-5 py-3.5 text-right">
-                    <a
-                      href={post.postUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[#8B6914] hover:underline font-semibold"
-                    >
-                      <span>Lihat</span>
-                      <RiExternalLinkLine size={13} />
-                    </a>
+                    <span className="text-[#8B6914] font-semibold hover:underline text-[11px]">
+                      Detail &rarr;
+                    </span>
                   </td>
                 </tr>
               ))}
@@ -503,6 +471,73 @@ export const DashboardOverview: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* 6. MODAL DETAIL POSTINGAN (Tidak perlu reload halaman) */}
+      {selectedPost && (
+        <div
+          className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedPost(null)}
+        >
+          <div
+            className="bg-white rounded max-w-2xl w-full p-6 space-y-4 shadow-xl border border-gray-200 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#8B6914] text-white">
+                  {selectedPost.type}
+                </span>
+                <span className="text-xs font-semibold text-gray-700">
+                  {selectedPost.category || "Proyek Lapangan"}
+                </span>
+              </div>
+              <button
+                onClick={() => setSelectedPost(null)}
+                className="text-gray-400 hover:text-gray-700 p-1 rounded"
+              >
+                <RiCloseLine size={20} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="aspect-video md:aspect-square bg-gray-100 rounded overflow-hidden border border-gray-200">
+                <img
+                  src={selectedPost.imageUrl}
+                  alt={selectedPost.shortcode}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              <div className="flex flex-col justify-between space-y-3">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-4 text-xs font-semibold text-gray-700">
+                    <span>❤️ {selectedPost.likes} Likes</span>
+                    <span>💬 {selectedPost.comments} Komentar</span>
+                  </div>
+                  <p className="text-xs text-gray-800 leading-relaxed max-h-56 overflow-y-auto scrollbar-hide border border-gray-100 p-3 rounded bg-gray-50/50">
+                    {selectedPost.caption}
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-gray-100 flex items-center justify-between">
+                  <span className="text-[11px] text-gray-400 font-mono">
+                    Shortcode: #{selectedPost.shortcode}
+                  </span>
+                  <a
+                    href={selectedPost.postUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-[#8B6914] text-white text-xs font-semibold hover:bg-[#6B5010]"
+                  >
+                    <span>Buka Instagram</span>
+                    <RiExternalLinkLine size={13} />
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
