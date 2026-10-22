@@ -7,7 +7,6 @@ import {
   RiArrowDownSLine,
   RiUserLine,
   RiLogoutBoxRLine,
-  RiWhatsappLine,
   RiShieldCheckLine,
 } from "react-icons/ri";
 import { Breadcrumb } from "./Breadcrumb";
@@ -60,11 +59,6 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, sidebarOpen = t
 
       <div className="flex-1 min-w-0 overflow-x-auto scrollbar-hide py-1">
         <Breadcrumb />
-      </div>
-
-      <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded bg-emerald-50 border border-emerald-200 text-[11px] font-semibold text-emerald-700">
-        <RiWhatsappLine size={15} />
-        <span>Bot WhatsApp: Online</span>
       </div>
 
       {/* User Profile Dropdown */}
