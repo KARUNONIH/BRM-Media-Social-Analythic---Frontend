@@ -4,9 +4,10 @@ import { RiArrowRightSLine, RiHomeLine } from "react-icons/ri";
 
 const LABEL_MAP: Record<string, string> = {
   dashboard: "Dashboard Overview",
-  posts: "Data Postingan Media Sosial",
-  recommendations: "Rekomendasi Strategis AI",
+  posts: "Data Postingan",
+  analytics: "Grafik & Tren Konten",
   "bot-logs": "Log Asisten WhatsApp",
+  access: "Manajemen Akses",
   settings: "Pengaturan",
 };
 

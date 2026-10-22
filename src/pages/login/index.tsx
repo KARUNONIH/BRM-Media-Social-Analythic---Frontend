@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { RiShieldUserLine, RiArrowRightLine } from "react-icons/ri";
+import { RiShieldUserLine } from "react-icons/ri";
 import { useAuth } from "../../providers/auth";
 
 declare global {
@@ -34,7 +34,7 @@ declare global {
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { loginWithGoogle, loginAsDemoOwner } = useAuth();
+  const { loginWithGoogle, loginAsDemoOwner, loginAsDemoAdmin } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -112,11 +112,6 @@ export const LoginPage: React.FC = () => {
     }
   }, [renderGoogleButton]);
 
-  const handleDemoLogin = () => {
-    loginAsDemoOwner();
-    navigate("/dashboard");
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -164,15 +159,30 @@ export const LoginPage: React.FC = () => {
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={handleDemoLogin}
-              className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 border border-[#8B6914] bg-[#8B6914] hover:bg-[#735710] text-white rounded text-xs font-semibold cursor-pointer transition-all shadow-xs"
-            >
-              <RiShieldUserLine size={16} />
-              <span>Masuk Sebagai Owner / Manajemen (Demo)</span>
-              <RiArrowRightLine size={14} />
-            </button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  loginAsDemoOwner();
+                  navigate("/dashboard");
+                }}
+                className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 px-3 border border-[#8B6914] bg-[#8B6914] hover:bg-[#6B5010] text-white rounded text-xs font-semibold cursor-pointer transition-all shadow-xs"
+              >
+                <RiShieldUserLine size={15} />
+                <span>Masuk (Owner)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  loginAsDemoAdmin();
+                  navigate("/dashboard");
+                }}
+                className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 px-3 border border-gray-300 bg-white hover:bg-gray-50 text-gray-800 rounded text-xs font-semibold cursor-pointer transition-all shadow-xs"
+              >
+                <RiShieldUserLine size={15} className="text-[#8B6914]" />
+                <span>Masuk (Admin)</span>
+              </button>
+            </div>
 
             <p className="text-[11px] text-center text-gray-400 pt-2">
               Single Sign-On (SSO) resmi internal PT Bumi Rekayasa Mandiri

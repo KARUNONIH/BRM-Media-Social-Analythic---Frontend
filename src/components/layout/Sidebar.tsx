@@ -4,12 +4,16 @@ import {
   RiDashboardLine,
   RiInstagramLine,
   RiWhatsappLine,
+  RiLineChartLine,
+  RiShieldUserLine,
 } from "react-icons/ri";
+import { useAuth } from "../../providers/auth";
 
 interface NavItem {
   label: string;
   path: string;
   icon: React.ReactNode;
+  badge?: string;
 }
 
 interface NavSection {
@@ -31,6 +35,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isMobile,
 }) => {
   const location = useLocation();
+  const { isAdmin } = useAuth();
   const showExpanded = isMobile || !collapsed;
 
   const sections: NavSection[] = [
@@ -41,15 +46,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ],
     },
     {
-      title: "ANALITIK KONTEN",
+      title: "ANALITIK MEDIA SOSIAL",
       items: [
         { label: "Data Postingan", path: "/dashboard/posts", icon: <RiInstagramLine size={18} /> },
+        { label: "Grafik & Tren Konten", path: "/dashboard/analytics", icon: <RiLineChartLine size={18} /> },
       ],
     },
     {
       title: "ASISTEN WHATSAPP",
       items: [
         { label: "Log & Monitor Bot", path: "/dashboard/bot-logs", icon: <RiWhatsappLine size={18} /> },
+      ],
+    },
+    {
+      title: "PENGATURAN & AKSES",
+      items: [
+        {
+          label: "Manajemen Akses",
+          path: "/dashboard/access",
+          icon: <RiShieldUserLine size={18} />,
+          badge: isAdmin ? "Admin" : undefined,
+        },
       ],
     },
   ];
@@ -108,7 +125,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       if (isMobile) onMobileClose();
                     }}
                     title={!showExpanded ? item.label : undefined}
-                    className={`flex items-center gap-3 rounded text-sm font-medium transition-colors ${
+                    className={`flex items-center justify-between rounded text-sm font-medium transition-colors ${
                       showExpanded ? "px-3 py-2.5" : "justify-center px-0 py-2.5"
                     } ${
                       isActive
@@ -116,8 +133,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
                     }`}
                   >
-                    <span className="shrink-0">{item.icon}</span>
-                    {showExpanded && <span>{item.label}</span>}
+                    <div className="flex items-center gap-3">
+                      <span className="shrink-0">{item.icon}</span>
+                      {showExpanded && <span>{item.label}</span>}
+                    </div>
+                    {showExpanded && item.badge && (
+                      <span
+                        className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                          isActive
+                            ? "bg-white/20 text-white"
+                            : "bg-gray-100 text-gray-600"
+                        }`}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
                   </Link>
                 );
               })}

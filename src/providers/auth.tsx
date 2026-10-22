@@ -3,24 +3,30 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 export interface User {
   name: string;
   email: string;
-  role: string;
+  role: "admin" | "owner" | "marketing" | string;
   avatarUrl?: string;
   token?: string;
 }
 
 interface AuthContextValue {
   user: User | null;
+  role: string | null;
+  isAdmin: boolean;
   isAuthenticated: boolean;
   loginWithGoogle: (credential: string) => Promise<boolean>;
   loginAsDemoOwner: () => void;
+  loginAsDemoAdmin: () => void;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue>({
   user: null,
+  role: null,
+  isAdmin: false,
   isAuthenticated: false,
   loginWithGoogle: async () => false,
   loginAsDemoOwner: () => {},
+  loginAsDemoAdmin: () => {},
   logout: () => {},
 });
 
@@ -62,14 +68,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loginAsDemoOwner = () => {
     const demoUser: User = {
-      name: "Owner BRM",
+      name: "Direksi / Owner BRM",
       email: "owner@bumirekayasamandiri.co.id",
       role: "owner",
       avatarUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop&q=80",
-      token: "demo-token",
+      token: "demo-owner-token",
     };
     setUser(demoUser);
     localStorage.setItem("brm_auth_user", JSON.stringify(demoUser));
+  };
+
+  const loginAsDemoAdmin = () => {
+    const adminUser: User = {
+      name: "Gibran Anggalana (Administrator)",
+      email: "gibran@bumirekayasamandiri.co.id",
+      role: "admin",
+      avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
+      token: "demo-admin-token",
+    };
+    setUser(adminUser);
+    localStorage.setItem("brm_auth_user", JSON.stringify(adminUser));
   };
 
   const logout = () => {
@@ -81,9 +99,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <AuthContext.Provider
       value={{
         user,
+        role: user?.role || null,
+        isAdmin: user?.role === "admin",
         isAuthenticated: !!user,
         loginWithGoogle,
         loginAsDemoOwner,
+        loginAsDemoAdmin,
         logout,
       }}
     >

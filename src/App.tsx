@@ -7,7 +7,9 @@ import { LoginPage } from "./pages/login";
 import { DashboardLayout } from "./components/layout/DashboardLayout";
 import { DashboardOverview } from "./pages/dashboard";
 import { PostsPage } from "./pages/posts";
+import { AnalyticsPage } from "./pages/analytics";
 import { BotLogsPage } from "./pages/bot-logs";
+import { AccessManagementPage } from "./pages/access";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
@@ -24,8 +26,16 @@ export default function App() {
               list: "/dashboard/posts",
             },
             {
+              name: "analytics",
+              list: "/dashboard/analytics",
+            },
+            {
               name: "bot-logs",
               list: "/dashboard/bot-logs",
+            },
+            {
+              name: "access",
+              list: "/dashboard/access",
             },
           ]}
         >
@@ -34,7 +44,9 @@ export default function App() {
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<DashboardOverview />} />
               <Route path="posts" element={<PostsPage />} />
+              <Route path="analytics" element={<AnalyticsPage />} />
               <Route path="bot-logs" element={<BotLogsPage />} />
+              <Route path="access" element={<AccessManagementPage />} />
             </Route>
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
