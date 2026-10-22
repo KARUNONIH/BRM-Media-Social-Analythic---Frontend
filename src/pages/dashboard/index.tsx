@@ -384,7 +384,7 @@ export const DashboardOverview: React.FC = () => {
       </div>
 
       {/* 5. TABEL 5 POSTINGAN TERAKHIR */}
-      <div className="bg-white shadow shadow-gray-300 rounded overflow-hidden">
+      <div className="bg-white shadow shadow-gray-300 rounded overflow-hidden border border-gray-200">
         <div className="p-6 border-b border-gray-200 flex items-center justify-between">
           <div>
             <h2 className="text-sm font-semibold text-gray-800">
@@ -401,34 +401,36 @@ export const DashboardOverview: React.FC = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-gray-50 border-b border-gray-200 text-gray-600 uppercase text-[10px] font-bold tracking-wider">
-              <tr>
-                <th className="px-5 py-3">Thumbnail</th>
-                <th className="px-5 py-3">Format</th>
-                <th className="px-5 py-3">Kategori Layanan</th>
-                <th className="px-5 py-3">Caption Konten</th>
-                <th className="px-5 py-3">Likes</th>
-                <th className="px-5 py-3">Komentar</th>
-                <th className="px-5 py-3">Tanggal</th>
-                <th className="px-5 py-3 text-right">Aksi</th>
+          <table className="min-w-max w-full text-sm">
+            <thead>
+              <tr className="border-b-2 border-gray-200 bg-gray-50">
+                <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-500 select-none whitespace-nowrap">Thumbnail</th>
+                <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-500 select-none whitespace-nowrap">Format</th>
+                <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-500 select-none whitespace-nowrap">Kategori Layanan</th>
+                <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-500 select-none whitespace-nowrap">Caption Konten</th>
+                <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-500 select-none whitespace-nowrap">Likes</th>
+                <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-500 select-none whitespace-nowrap">Komentar</th>
+                <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-500 select-none whitespace-nowrap">Tanggal</th>
+                <th className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-gray-500 select-none whitespace-nowrap">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
-              {posts.slice(0, 5).map((post) => (
+            <tbody>
+              {posts.slice(0, 5).map((post, rowIdx) => (
                 <tr
                   key={post.id}
                   onClick={() => setSelectedPost(post)}
-                  className="hover:bg-amber-50/50 transition-colors cursor-pointer"
+                  className={`border-b border-gray-100 last:border-0 transition-colors hover:bg-blue-50/30 cursor-pointer ${
+                    rowIdx % 2 === 0 ? "bg-white" : "bg-gray-50/50"
+                  }`}
                 >
-                  <td className="px-5 py-3.5">
+                  <td className="px-4 py-3">
                     <img
                       src={post.imageUrl}
                       alt={post.shortcode}
-                      className="w-12 h-12 object-cover rounded border border-gray-200"
+                      className="w-11 h-11 object-cover rounded border border-gray-200"
                     />
                   </td>
-                  <td className="px-5 py-3.5">
+                  <td className="px-4 py-3">
                     <span
                       className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold ${
                         post.type.includes("Reel") || post.type.includes("Video")
@@ -439,29 +441,35 @@ export const DashboardOverview: React.FC = () => {
                       {post.type}
                     </span>
                   </td>
-                  <td className="px-5 py-3.5 font-medium text-gray-700">
+                  <td className="px-4 py-3 font-medium text-gray-700 whitespace-nowrap">
                     {post.category || "Proyek Konstruksi"}
                   </td>
-                  <td className="px-5 py-3.5 max-w-sm">
+                  <td className="px-4 py-3 max-w-sm">
                     <p className="line-clamp-2 text-gray-800 leading-relaxed font-normal">
                       {post.caption}
                     </p>
                   </td>
-                  <td className="px-5 py-3.5 font-semibold text-gray-800">
-                    {post.likes.toLocaleString()}
+                  <td className="px-4 py-3 font-semibold text-gray-800 whitespace-nowrap">
+                    <span className="inline-flex items-center gap-1.5 text-rose-600">
+                      <RiHeartLine size={14} />
+                      <span className="text-gray-800 font-medium">{post.likes.toLocaleString()}</span>
+                    </span>
                   </td>
-                  <td className="px-5 py-3.5 text-gray-600">
-                    {post.comments.toLocaleString()}
+                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                    <span className="inline-flex items-center gap-1.5 text-blue-600">
+                      <RiChat3Line size={14} />
+                      <span className="text-gray-700 font-medium">{post.comments.toLocaleString()}</span>
+                    </span>
                   </td>
-                  <td className="px-5 py-3.5 text-gray-500 whitespace-nowrap">
+                  <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
                     {new Date(post.publishedAt).toLocaleDateString("id-ID", {
                       day: "numeric",
                       month: "short",
                       year: "numeric",
                     })}
                   </td>
-                  <td className="px-5 py-3.5 text-right">
-                    <span className="text-[#8B6914] font-semibold hover:underline text-[11px]">
+                  <td className="px-4 py-3 text-right whitespace-nowrap">
+                    <span className="text-[#8B6914] font-semibold hover:underline text-xs">
                       Detail &rarr;
                     </span>
                   </td>
